@@ -81,6 +81,8 @@ Classes & Objects
 
 Structs
 
+Linked List
+
 Arrays (Static)
 
 File Input/Output
