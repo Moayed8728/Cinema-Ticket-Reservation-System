@@ -1,3 +1,6 @@
+#ifndef TICKET_H
+#define TICKET_H
+
 #include <string>
 using namespace std;
 
@@ -10,5 +13,9 @@ public:
     double total;
 
     Ticket();
+
     void display();
+    void display() const;
 };
+
+#endif

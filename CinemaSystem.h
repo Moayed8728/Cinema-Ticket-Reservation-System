@@ -32,15 +32,22 @@ public:
     MovieNode* findMovieById(int id);
     bool movieIdExists(int id);
     void showMovies();
-    int searchMovie(string title);
 
     void addTicket(Ticket t);
     void showMyTickets(const string& user);
     void cancelTicket(const string& user);
-
     void bookTicket(const string& user);
 
+    MovieNode* findMovieByTitle(const string& title);
+    void searchMovieMenu();
+
+    void sortByTitle(bool asc);
+    void sortByPrice(bool asc);
+    void sortByDuration(bool asc);
     void runSortMenu();
+
+    void viewAllTickets();
+
     void userMenu(const string& user);
     void addMovie();
     void adminMenu();

@@ -9,59 +9,49 @@ const int MAX_ACCOUNTS = 200;
 
 bool usernameExists(Account acc[], int count, string u) {
     for (int i = 0; i < count; i++) {
-        if (acc[i].username == u) {
-            return true;
-        }
+        if (acc[i].username == u) return true;
     }
     return false;
 }
 
 int findAccount(Account acc[], int count, string u, string p) {
     for (int i = 0; i < count; i++) {
-        if (acc[i].username == u && acc[i].password == p) {
-            return i;
-        }
+        if (acc[i].username == u && acc[i].password == p) return i;
     }
     return -1;
 }
 
 void loadUsers(Account acc[], int &count) {
     ifstream f("users.txt");
-
-    if (!f) {
-        return;
-    }
+    if (!f) return;
 
     string u, p;
-
     while (f >> u >> p) {
         acc[count].username = u;
         acc[count].password = p;
         acc[count].role = "user";
         count++;
+        if (count >= MAX_ACCOUNTS) break;
     }
-
     f.close();
 }
 
 void createAccount(Account acc[], int &count) {
     cout << "\n--- CREATE ACCOUNT ---\n";
-
     string u, p;
 
     while (true) {
         cout << "Username: ";
         cin >> u;
 
-        if (u.length() < 4 || u.length() > 15 || !isalpha(u[0])) {
+        if (u.length() < 4 || u.length() > 15 || !isalpha((unsigned char)u[0])) {
             cout << "Username must start with a letter and be 4–15 chars.\n";
             continue;
         }
 
         bool valid = true;
-
         for (char c : u) {
-            if (!isalnum(c)) {
+            if (!isalnum((unsigned char)c)) {
                 valid = false;
                 break;
             }
@@ -83,18 +73,21 @@ void createAccount(Account acc[], int &count) {
     cout << "Password: ";
     cin >> p;
 
+    if (count >= MAX_ACCOUNTS) {
+        cout << "Account limit reached.\n";
+        return;
+    }
+
     acc[count].username = u;
     acc[count].password = p;
     acc[count].role = "user";
     count++;
 
     ofstream f("users.txt", ios::app);
-
     if (!f) {
         cout << "Error saving account!\n";
         return;
     }
-
     f << u << " " << p << "\n";
     f.close();
 
@@ -130,10 +123,8 @@ int main() {
 
         if (c == 1) {
             string u, p;
-
             cout << "Username: ";
             cin >> u;
-
             cout << "Password: ";
             cin >> p;
 
@@ -141,17 +132,11 @@ int main() {
 
             if (idx == -1) {
                 cout << "Invalid login.\n";
+            } else {
+                if (acc[idx].role == "admin") sys.adminMenu();
+                else sys.userMenu(u);
             }
-            else {
-                if (acc[idx].role == "admin") {
-                    sys.adminMenu();
-                }
-                else {
-                    sys.userMenu(u);
-                }
-            }
-        }
-        else if (c == 2) {
+        } else if (c == 2) {
             createAccount(acc, accCount);
         }
     }
