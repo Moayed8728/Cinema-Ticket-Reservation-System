@@ -1,39 +1,53 @@
+#ifndef CINEMASYSTEM_H
+#define CINEMASYSTEM_H
+
 #include "Movie.h"
 #include "Ticket.h"
 #include <string>
 using namespace std;
 
+struct MovieNode {
+    Movie data;
+    MovieNode* next;
+};
+
+struct TicketNode {
+    Ticket data;
+    TicketNode* next;
+};
+
 class CinemaSystem {
-public:
-    Movie movies[100];
-    Ticket tickets[300];
-    int movieCount;
-    int ticketCount;
+private:
+    MovieNode* movieHead;
+    TicketNode* ticketHead;
     int nextTicketId;
 
+public:
     CinemaSystem();
 
-    
     void loadMovies();
     void saveNewMovie(Movie m);
-    void showMovies();
-    int findMovieById(int id);
+
+    void addMovieNode(Movie m);
+    MovieNode* findMovieById(int id);
     bool movieIdExists(int id);
-    void sortMoviesByTitleAsc();
+    void showMovies();
     int searchMovie(string title);
 
-    void bookTicket(const string &user);
-    void showMyTickets(const string &user);
-    void cancelTicket(const string &user);
+    void addTicket(Ticket t);
+    void showMyTickets(const string& user);
+    void cancelTicket(const string& user);
 
-    
+    void bookTicket(const string& user);
+
     void runSortMenu();
-    void userMenu(const string &user);
+    void userMenu(const string& user);
     void addMovie();
     void adminMenu();
 
-    
     int safeInt();
     int safeChoice(int min, int max);
-    string toLower(const string &s);
+    string toLower(const string& s);
 };
+
+#endif
