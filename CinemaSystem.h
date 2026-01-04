@@ -4,6 +4,9 @@
 #include "Movie.h"
 #include "Ticket.h"
 #include <string>
+#include "BookingQueue.h"
+#include "BookingRequest.h"
+
 using namespace std;
 
 struct MovieNode {
@@ -21,6 +24,9 @@ private:
     MovieNode* movieHead;
     TicketNode* ticketHead;
     int nextTicketId;
+    BookingQueue bookingRequestQueue;
+    int nextRequestId;
+
 
 public:
     CinemaSystem();
@@ -55,6 +61,13 @@ public:
     int safeInt();
     int safeChoice(int min, int max);
     string toLower(const string& s);
+
+
+    void submitBookingRequest(const string& username);    
+    void checkMyQueueStatus(const string& username);      
+    void viewQueueSummary();                               
+    void processNextBookingRequest();                      
+
 };
 
 #endif

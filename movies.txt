@@ -47,4 +47,4 @@
 47 Aladdin Fantasy 128 15.0
 48 LionKing Animation 88 14.0
 49 Pinocchio Animation 87 13.0
-50 AntMan Action 118 17.0
+50 AntMan Action 118 17.051 Dang Horror 123 15

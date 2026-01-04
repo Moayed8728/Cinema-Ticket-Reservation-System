@@ -7,6 +7,7 @@ CinemaSystem::CinemaSystem() {
     movieHead = NULL;
     ticketHead = NULL;
     nextTicketId = 1;
+    nextRequestId = 1;
 }
 
 int CinemaSystem::safeInt() {
@@ -319,9 +320,9 @@ void CinemaSystem::addMovie() {
 void CinemaSystem::userMenu(const string& user) {
     while (true) {
         cout << "\n--- USER MENU (" << user << ") ---\n";
-        cout << "1. View movies\n2. Book ticket\n3. Cancel ticket\n4. View my tickets\n5. Search movie\n6. Sort movies\n0. Logout\nChoice: ";
+        cout << "1. View movies\n2. Submit Booking request\n3. Cancel ticket\n4. View my tickets\n5. Search movie\n6. Sort movies\n7. Check my queue status\n0. Logout\nChoice: ";
 
-        int c = safeChoice(0, 6);
+        int c = safeChoice(0, 7);
 
         if (c == 0) 
         return;
@@ -330,7 +331,7 @@ void CinemaSystem::userMenu(const string& user) {
         showMovies();
         
         if (c == 2) 
-        bookTicket(user);
+        submitBookingRequest(user);
         
         if (c == 3) 
         cancelTicket(user);
@@ -344,15 +345,19 @@ void CinemaSystem::userMenu(const string& user) {
         
         if (c == 6) 
         runSortMenu();
+
+        if (c == 7) 
+        checkMyQueueStatus(user);
+
     }
 }
 
 void CinemaSystem::adminMenu() {
     while (true) {
         cout << "\n--- ADMIN MENU ---\n";
-        cout << "1. View movies\n2. Add movie\n3. Sort movies\n4. Search movie\n5. View all tickets\n0. Logout\nChoice: ";
+        cout << "1. View movies\n2. Add movie\n3. Sort movies\n4. Search movie\n5. View all tickets\n6. View queue summary\n7. Process next booking request\n0. Logout\nChoice: ";
 
-        int c = safeChoice(0, 5);
+        int c = safeChoice(0, 7);
 
             if (c == 0)
             return;
@@ -365,6 +370,153 @@ void CinemaSystem::adminMenu() {
             if (c == 4) 
             searchMovieMenu();
             if (c == 5) 
-        viewAllTickets();
+            viewAllTickets();
+            if (c == 6) 
+            viewQueueSummary();
+            if (c == 7) 
+            processNextBookingRequest();
+
+        
+        
     }
 }
+
+//SUBMIT BOOKING REQUEST
+void CinemaSystem::submitBookingRequest(const string& username) {
+    showMovies();
+
+    cout << "Enter Movie ID: ";
+    int movieId = safeInt();
+
+    MovieNode* selectedMovieNode = findMovieById(movieId);
+    if (selectedMovieNode == NULL) {
+        cout << "Movie not found.\n";
+        return;
+    }
+
+    selectedMovieNode->data.showSeats();
+    cout << "Choose Seat (0-9): ";
+    int chosenSeat = safeInt();
+
+    if (chosenSeat < 0 || chosenSeat > 9) {
+        cout << "Invalid seat number.\n";
+        return;
+    }
+
+    // We are NOT booking immediately.
+    // We are placing a request into the queue.
+    BookingRequest newRequest;
+    newRequest.requestId = nextRequestId++;
+    newRequest.username = username;
+    newRequest.movieId = movieId;
+    newRequest.seatNumber = chosenSeat;
+
+    bookingRequestQueue.enQueue(newRequest);
+
+    cout << "\nRequest submitted successfully (Added to Queue).\n";
+    cout << "Your Request ID: " << newRequest.requestId << "\n";
+    cout << "Current Queue Size: " << bookingRequestQueue.size() << "\n";
+}
+
+
+//Check queue status
+void CinemaSystem::checkMyQueueStatus(const string& username) {
+    if (bookingRequestQueue.isEmpty()) {
+        cout << "Queue is empty. No pending booking requests.\n";
+        return;
+    }
+
+    int position = bookingRequestQueue.findPositionByUsername(username);
+
+    if (position == -1) {
+        cout << "You have no pending booking request in the queue.\n";
+        return;
+    }
+
+    cout << "You have a pending booking request.\n";
+    cout << "Your position in queue: " << position
+         << " out of " << bookingRequestQueue.size() << "\n";
+    cout << "(FIFO: First request submitted will be processed first)\n";
+}
+
+
+//View Queue summsary (for Admin)
+void CinemaSystem::viewQueueSummary() {
+    cout << "\n--- Booking Queue Summary ---\n";
+
+    if (bookingRequestQueue.isEmpty()) {
+        cout << "Queue is empty.\n";
+        return;
+    }
+
+    cout << "Total Pending Requests: "
+         << bookingRequestQueue.size() << "\n";
+
+    BookingRequest frontRequest, rearRequest;
+
+    bool hasFront = bookingRequestQueue.getFront(frontRequest);
+    bool hasRear  = bookingRequestQueue.getRear(rearRequest);
+
+    if (!hasFront || !hasRear) {
+        cout << "Queue is empty.\n";
+        return;
+    }
+
+    cout << "FRONT (Next to be processed): "
+         << "Request ID: " << frontRequest.requestId
+         << " | User: " << frontRequest.username
+         << " | Movie ID: " << frontRequest.movieId
+         << " | Seat: " << frontRequest.seatNumber << "\n";
+
+    cout << "REAR (Most recent request): "
+         << "Request ID: " << rearRequest.requestId
+         << " | User: " << rearRequest.username
+         << " | Movie ID: " << rearRequest.movieId
+         << " | Seat: " << rearRequest.seatNumber << "\n";
+
+    bookingRequestQueue.displayQueue();
+}
+
+
+//Process next booking requesr
+void CinemaSystem::processNextBookingRequest() {
+    BookingRequest requestToProcess;
+
+    if (!bookingRequestQueue.deQueue(requestToProcess)) {
+        cout << "No pending requests to process.\n";
+        return;
+    }
+
+    MovieNode* movieNode = findMovieById(requestToProcess.movieId);
+    if (movieNode == NULL) {
+        cout << "Request rejected: Movie not found.\n";
+        return;
+    }
+
+    int seat = requestToProcess.seatNumber;
+    if (seat < 0 || seat > 9) {
+        cout << "Request rejected: Invalid seat number.\n";
+        return;
+    }
+
+    if (movieNode->data.seats[seat]) {
+        cout << "Request rejected: Seat already taken.\n";
+        return;
+    }
+
+    // Confirm the booking now (staff/admin processing)
+    movieNode->data.seats[seat] = true;
+
+    Ticket newTicket;
+    newTicket.ticketId = nextTicketId++;
+    newTicket.movieId = requestToProcess.movieId;
+    newTicket.username = requestToProcess.username;
+    newTicket.seatNumber = seat;
+    newTicket.total = movieNode->data.price;
+
+    addTicket(newTicket);
+
+    cout << "Request processed successfully.\n";
+    cout << "Ticket booked for user: " << requestToProcess.username << "\n";
+}
+
