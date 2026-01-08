@@ -19,6 +19,14 @@ struct TicketNode {
     TicketNode* next;
 };
 
+struct RequestResult {
+    int requestId;
+    string username;
+    bool approved;
+    int ticketId; 
+};
+
+
 class CinemaSystem {
 private:
     MovieNode* movieHead;
@@ -26,6 +34,8 @@ private:
     int nextTicketId;
     BookingQueue bookingRequestQueue;
     int nextRequestId;
+    RequestResult results[500];
+    int resultsCount;
 
 
 public:

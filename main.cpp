@@ -16,10 +16,20 @@ bool usernameExists(Account acc[], int count, string u) {
 
 int findAccount(Account acc[], int count, string u, string p) {
     for (int i = 0; i < count; i++) {
-        if (acc[i].username == u && acc[i].password == p) return i;
+        if (acc[i].username == u && acc[i].password == p) {
+            return i;   
+        }
+
     }
-    return -1;
+    for (int i = 0; i < count; i++) {
+    if (acc[i].username == u && acc[i].password == p) {
+        return i;
+    }
 }
+
+    return -1;          
+}
+
 
 void loadUsers(Account acc[], int &count) {
     ifstream f("users.txt");
@@ -35,6 +45,8 @@ void loadUsers(Account acc[], int &count) {
     }
     f.close();
 }
+
+
 
 void createAccount(Account acc[], int &count) {
     cout << "\n--- CREATE ACCOUNT ---\n";
@@ -127,7 +139,7 @@ int main() {
             cin >> u;
             cout << "Password: ";
             cin >> p;
-
+            
             int idx = findAccount(acc, accCount, u, p);
 
             if (idx == -1) {
